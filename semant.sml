@@ -13,6 +13,7 @@ struct
   fun checkInt ({ty=Types.INT, exp=_}, pos) = ()
   | checkInt ({ty=_,exp=_},pos) = ErrorMsg.error pos "integer required"
 
+
   fun transProg (exp:A.exp) : unit =
     let
       val {ty=_, exp=prog} = transExp (Env.base_venv, Env.base_tenv) exp
@@ -54,6 +55,20 @@ struct
             in
               listExps(exps)
             end
+        | trexp(A.CallExp {func, args, pos}) =
+          (case Symbol.look(venv, func) of
+                  SOME (Env.FunEntry {formals, result}) =>
+                    let 
+                      fun easyTransExp(e) = transExp(venv, tenv) e
+                      val argTypes = map easyTransExp args
+                    in
+                      if length(argTypes) <> length(formals) then
+                        (ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args))); {exp=(), ty=Types.NIL})
+                      else 
+                        ({exp=(), ty=Types.NIL})
+                    end
+                  | _ => (ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func)); {exp=(), ty=Types.NIL}))
+
 
         | trexp _ = {ty=Types.UNIT, exp=()}
     in
