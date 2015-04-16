@@ -3,8 +3,6 @@ structure Semant :
 struct
   structure A = Absyn
 
-  (* dummy translate for chapter 5 *)
-  structure Translate = struct type exp = unit end
 
   type expty = {exp: Translate.exp, ty: Types.ty}
   type venv = Env.enventry Symbol.table
@@ -49,7 +47,7 @@ struct
             let
               fun listExps([]) = {exp = (), ty = Types.UNIT}
               | listExps((e, p)::[]) = transExp(venv, tenv) e
-              | listExps((e, p)::l) = 
+              | listExps((e, p)::l) =
                   (transExp(venv, tenv) e;
                   listExps(l))
             in
@@ -58,13 +56,13 @@ struct
         | trexp(A.CallExp {func, args, pos}) =
           (case Symbol.look(venv, func) of
                   SOME (Env.FunEntry {formals, result}) =>
-                    let 
+                    let
                       fun easyTransExp(e) = transExp(venv, tenv) e
                       val argTypes = map easyTransExp args
                     in
                       if length(argTypes) <> length(formals) then
                         (ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args))); {exp=(), ty=Types.NIL})
-                      else 
+                      else
                         ({exp=(), ty=Types.NIL})
                     end
                   | _ => (ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func)); {exp=(), ty=Types.NIL}))
@@ -75,13 +73,13 @@ struct
       trexp
     end
   and transDec (venv, tenv, A.VarDec {name, escape, typ=NONE, init, pos}) =
-        let 
+        let
           val {exp= _, ty} = transExp(venv, tenv) init
-        in 
+        in
           {tenv=tenv, venv=Symbol.enter(venv, name, Env.VarEntry {ty=ty})}
         end
 
-      |transDec (venv, tenv, A.VarDec{name,escape,typ=SOME(symbol, p), init, pos}) = 
+      |transDec (venv, tenv, A.VarDec{name,escape,typ=SOME(symbol, p), init, pos}) =
         let
           val {exp= _, ty} = transExp (venv, tenv) init
         in
