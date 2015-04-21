@@ -92,7 +92,6 @@ Guess what you have to do next ;-).
 To do list
 
 - Copy Humberto's tiger.grm into repo
-- Hacer frame.sig
 - Hacer MIPSFrame.sml
 - Terminar translate.sml
--
+- Modificar semant.sml

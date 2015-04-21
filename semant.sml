@@ -12,6 +12,7 @@ struct
   | checkInt ({ty=_,exp=_},pos) = ErrorMsg.error pos "integer required"
 
 
+  (* TODO: Aqui hay que crear en outermost frame *)
   fun transProg (exp:A.exp) : unit =
     let
       val {ty=_, exp=prog} = transExp (Env.base_venv, Env.base_tenv) exp
@@ -28,6 +29,7 @@ struct
         | trexp (A.NilExp) = {ty=Types.NIL, exp=()}
         | trexp (A.IntExp _) = {ty=Types.INT, exp=()}
         | trexp (A.StringExp (_,_)) = {ty=Types.STRING, exp=()}
+        (* TODO: Aqui hay que llamar allocLocal de translate para las variables nuevas que se declaran *)
         | trexp (A.LetExp {decs, body, pos}) =
             let
               fun delosenv (venv, tenv, nil) = {tenv=tenv, venv=venv}
@@ -53,6 +55,7 @@ struct
             in
               listExps(exps)
             end
+        (* TODO: Aqui hay que usar translate para crear un frame nuevo para la funcion *)
         | trexp(A.CallExp {func, args, pos}) =
           (case Symbol.look(venv, func) of
                   SOME (Env.FunEntry {formals, result}) =>
@@ -72,6 +75,7 @@ struct
     in
       trexp
     end
+  (* TODO: Aqui hay que usar translate para llamar allocLocal y añadir la variable al frame *)
   and transDec (venv, tenv, A.VarDec {name, escape, typ=NONE, init, pos}) =
         let
           val {exp= _, ty} = transExp(venv, tenv) init
