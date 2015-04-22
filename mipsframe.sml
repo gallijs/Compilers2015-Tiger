@@ -11,10 +11,10 @@ struct
     let
       fun formalToAccess boolThing = (*formal -> access*)
         if boolThing
-        then InFrame 0 
+        then InFrame 0
         else InReg (Temp.newtemp())
 
-    in 
+    in
       {name = name,
       formals = map formalToAccess formals,
       cuantos_locales = ref 0
@@ -23,13 +23,20 @@ struct
     end
 
   (* TODO: Seria bueno hacer una funcion auxiliar para reciclarla en allocLocal y formalToAccess *)
-  fun allocLocal {name, formals, cuantos_locales} boolThing = 
-    if boolThing
-    then InFrame 0 
-    else InReg (Temp.newtemp())
-    (* TODO: Generar el access *)
-
- (*fun formalToAccess escape = 0 formal -> access*)
+  fun allocLocal {name, formals, cuantos_locales} boolThing =
+    let
+      val currentOffset = ref 0
+      fun incrOffset() =
+        let
+          val offset = currentOffset
+        in
+          ((currentOffset := !currentOffset - 4); !offset)
+        end
+      fun alloc esc =
+        InFrame(incrOffset())
+    in
+      alloc
+    end
 
     (* TODO: Crear un access nuevo. El parametro formal es un booleano para
     determinar si esta variable 'escapa' o no. No se puede llamar allocLocal, pero
