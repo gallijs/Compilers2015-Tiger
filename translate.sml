@@ -1,5 +1,7 @@
 structure Translate : TRANSLATE =
 struct
+  structure Frame = MipsFrame
+
   type exp = unit
   (* level tiene el frame adentro *)
   type level = int * Frame

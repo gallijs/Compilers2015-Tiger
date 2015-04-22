@@ -8,6 +8,8 @@ tiger.grm
 symbol.sml
 table.sig
 table.sml
+frame.sig
+mipsframe.sml
 translate.sig
 translate.sml
 temp.sig
