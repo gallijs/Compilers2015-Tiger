@@ -6,7 +6,7 @@ struct
     cuantos_locales = ref 0
     (* TODO: Aqui puede ser que tengamos que añadir cosas. *)
     }
-
+(*Test*)
   (* TODO: Seria bueno hacer una funcion auxiliar para reciclarla en allocLocal y formalToAccess *)
   fun allocLocal {name, formals, cuantos_locales} true =
     (* TODO: Generar el access *)
