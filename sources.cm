@@ -10,6 +10,7 @@ table.sig
 table.sml
 frame.sig
 mipsframe.sml
+semant.sml
 translate.sig
 translate.sml
 temp.sig
@@ -17,7 +18,6 @@ temp.sml
 prabsyn.sml
 types.sml
 env.sml
-semant.sml
 $/smlnj-lib.cm
 $/basis.cm
 $/ml-yacc-lib.cm

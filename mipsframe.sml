@@ -8,7 +8,7 @@ struct
   fun formals({name = _, formals = formals , cuantos_locales = _}) = formals
   fun cuantos_locales({name = _, formals = _ , cuantos_locales = cuantos_locales}) = cuantos_locales
 
-  fun newFrame {name=name, formals=formals} =
+  fun newFrame {name, formals} =
     let
       fun formalToAccess boolThing = (*formal -> access*)
         if boolThing
@@ -24,10 +24,10 @@ struct
     end
 
   (* TODO: Seria bueno hacer una funcion auxiliar para reciclarla en allocLocal y formalToAccess *)
-  fun allocLocal {name, formals, cuantos_locales} boolThing =
+  fun allocLocal {name, formals, cuantos_locales} : bool -> access =
     let
-      fun alloc esc:bool =
-        InFrame((!cuantos_locales*-4) - 4)
+      fun alloc esc : access =
+        InFrame((!cuantos_locales * (~4)) - 4)
     in
       alloc
     end

@@ -4,37 +4,41 @@ struct
 
   type exp = unit
   (* level tiene el frame adentro *)
-  type level = int * Frame
+  type level = int * Frame.frame
   type access = level * Frame.access
 
-  val outermost = 0
+  val outermost = (0, Frame.newFrame({name=Temp.namedlabel("outermost"), formals=[]}))
 
   (* TODO: Estas funciones las va a utilizar semant.sml en CallExp y en VarDec *)
 
   (* TODO: newLevel tiene que crear un frame nuevo utilizando newFrame en mipsframe.sml.
   El level puede quedarse en 0 siempre. *)
-  fun newLevel {parent, name, formals} = 0
+  fun newLevel {parent : level, name : Temp.label, formals : bool list} =
     (* Adds an extra element to the formal-parameter list and calls *)
-    let 
-      val newFrame' = Frame.newFrame(name=name, formals=formals)
-    in 
-      {0, newFrame'}
+    let
+      val newFrame' = Frame.newFrame({name=name, formals=formals})
+    in
+      (0, newFrame')
     end
 
   (* TODO: formals tiene que llamar la funcion formals de mipsframe.sml para el frame asociado al
   level que recibe. En nuestro caso level siempre es 0 *)
-  fun formals level = [(0, 0)]
+  fun formals level = []
 
   (* TODO: Basicamente lo mismo que formals pero utilizando el allocLocal de mipsframe.sml.
   Devuelve un access con el mismo level  y el frame.access de la variable que se acaba de alocar *)
-  fun allocLocal {lvl, f} =
+  fun allocLocal (lvl, f) =
     let
-      fun alloc esc:bool =
+      fun alloc esc : access =
         let
-          val cuantos_locales = Frame.cuantos_locales(f)
-          val faccess = Frame.allocLocal(name=Frame.name(f), formals=Frame.formals(f), cuantos_locales=cuantos_locales)(esc)
+          val cuantos_locales = Frame.cuantos_locales f
+          val faccess : Frame.access = Frame.allocLocal({name=Frame.name f, formals=Frame.formals f, cuantos_locales=cuantos_locales})(esc)
+          val newLocals = ref (!cuantos_locales-4)
+          val nframe : Frame.frame = {name=Frame.name(f), formals=Frame.formals(f), cuantos_locales=newLocals}
+          val newLevel : level = (lvl, nframe)
+          val returnAccess : access = (newLevel, faccess)
         in
-          {{lvl, {Frame.name(f), Frame.formals(f), !cuantos_locales-4}}, faccess}
+          returnAccess
         end
     in
       alloc
