@@ -3,6 +3,8 @@ structure Semant :
 struct
   structure A = Absyn
 
+  (* dummy translate for chapter 5 *)
+  structure Translate = struct type exp = unit end
 
   type expty = {exp: Translate.exp, ty: Types.ty}
   type venv = Env.enventry Symbol.table
@@ -11,86 +13,111 @@ struct
   fun checkInt ({ty=Types.INT, exp=_}, pos) = ()
   | checkInt ({ty=_,exp=_},pos) = ErrorMsg.error pos "integer required"
 
-
-  (* TODO: Aqui hay que crear en outermost frame *)
   fun transProg (exp:A.exp) : unit =
     let
       val {ty=_, exp=prog} = transExp (Env.base_venv, Env.base_tenv) exp
     in
       prog
     end
-
   and transExp(venv:venv,tenv:tenv) : A.exp -> expty =
-    let fun trexp (A.OpExp{left, oper, right, pos}) =
-      (checkInt (trexp left, pos);
-        checkInt (trexp right, pos);
-        {ty=Types.INT, exp=()})
-
-        | trexp (A.NilExp) = {ty=Types.NIL, exp=()}
+    let
+      fun trexp (A.VarExp var) = transvar(var)
+        | trexp (A.NilExp) = {exp = (), ty = Types.NIL}
         | trexp (A.IntExp _) = {ty=Types.INT, exp=()}
         | trexp (A.StringExp (_,_)) = {ty=Types.STRING, exp=()}
-        (* TODO: Aqui hay que llamar allocLocal de translate para las variables nuevas que se declaran *)
+        | trexp (A.OpExp{left, oper, right, pos}) =
+              (checkInt (trexp left, pos);
+              checkInt (trexp right, pos);
+              {ty=Types.INT, exp=()})
+        (* Aqui hay magia so la voy a explicar.
+           Primero recibimos la lista de pares *)
+        | trexp (A.SeqExp explist) =
+          (* Chequeate a ver que no este vacía *)
+          if not(List.null(explist))
+          then
+            let
+              (* Rompe la lista de pares en dos listas distintas. (Powerful, I know.) *)
+              val (expList, posList) = ListPair.unzip explist
+              (* Haz una lista nueva corriendo trexp en cada elemento de expList.
+                 (Think list comprehensions en *sob* Python *sob* ) *)
+              val newExpList = (map (fn (exp) => trexp exp) expList)
+            in
+              (* SeqExp devuelve el resultado del ultimo exp, asi que aqui devolvemos ese tipo. *)
+              {exp = (), ty = (#ty (List.last(newExpList)))}
+            end
+          else
+            {exp = (), ty = Types.UNIT}
+        | trexp (A.AssignExp {var, exp, pos}) =
+            let
+              val varType = transvar(var)
+              val expType = trexp(exp)
+            in
+              if (#ty expType) = (#ty varType)
+              then
+                {exp = (), ty = (#ty expType)}
+              else
+                {exp = (ErrorMsg.error pos ("Types no matchean loko.")), ty = Types.UNIT}
+            end
         | trexp (A.LetExp {decs, body, pos}) =
-            let
-              fun delosenv (venv, tenv, nil) = {tenv=tenv, venv=venv}
-              | delosenv (venv, tenv, dec::decs) =
-                let
-                  val {tenv=newtenv,venv=newvenv} = transDec(venv,tenv,dec)
-                in
-                  delosenv (newvenv, newtenv, decs)
-                end
-            in
-              let val {tenv=newtenv, venv=newvenv} = delosenv(venv,tenv,decs)
-              in
-                transExp (newvenv, newtenv) body
-              end
-            end
-        | trexp (A.SeqExp exps) =
-            let
-              fun listExps([]) = {exp = (), ty = Types.UNIT}
-              | listExps((e, p)::[]) = transExp(venv, tenv) e
-              | listExps((e, p)::l) =
-                  (transExp(venv, tenv) e;
-                  listExps(l))
-            in
-              listExps(exps)
-            end
-        (* TODO: Aqui hay que usar translate para crear un frame nuevo para la funcion *)
-        | trexp(A.CallExp {func, args, pos}) =
-          (case Symbol.look(venv, func) of
-                  SOME (Env.FunEntry {formals, result}) =>
-                    let
-                      fun easyTransExp(e) = transExp(venv, tenv) e
-                      val argTypes = map easyTransExp args
-                    in
-                      if length(argTypes) <> length(formals) then
-                        (ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args))); {exp=(), ty=Types.NIL})
-                      else
-                        ({exp=(), ty=Types.NIL})
-                    end
-                  | _ => (ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func)); {exp=(), ty=Types.NIL}))
-
-
-        | trexp _ = {ty=Types.UNIT, exp=()}
+           let
+             fun delosenv (venv, tenv, nil) = {tenv=tenv, venv=venv}
+               | delosenv (venv, tenv, dec::decs) =
+                   let
+                      val {tenv=newtenv,venv=newvenv} = transDec(venv,tenv) dec
+                   in
+                     delosenv (newvenv, newtenv, decs)
+                   end
+           in
+             let
+                val {tenv=newtenv, venv=newvenv} = delosenv(venv,tenv,decs)
+             in
+               transExp (newvenv, newtenv) body
+             end
+           end
+        | trexp _ = {ty=Types.UNIT, exp=ErrorMsg.error 0 "Can'ttypecheck this yet"}
+      and transvar (A.SimpleVar (symbol, pos)) =
+            (case Symbol.look(venv, symbol) of
+              NONE =>
+                {exp = (ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol))), ty = Types.UNIT}
+            | SOME(Env.VarEntry{ty}) =>
+                {exp = (), ty = ty}
+            | SOME(Env.FunEntry{formals, result}) => {exp = (ErrorMsg.error pos "loko esto es una function."), ty = Types.UNIT})
+        | transvar (A.FieldVar (var, symbol, pos)) =
+            {exp = (ErrorMsg.error pos "loko no estamos haciendo vars complicados."), ty = Types.UNIT}
+        | transvar (A.SubscriptVar (var, exp, pos)) =
+            {exp = (ErrorMsg.error pos "loko no estamos haciendo vars complicados."), ty = Types.UNIT}
     in
       trexp
     end
-  (* TODO: Aqui hay que usar translate para llamar allocLocal y añadir la variable al frame *)
-  and transDec (venv, tenv, A.VarDec {name, escape, typ=NONE, init, pos}) =
-        let
-          val {exp= _, ty} = transExp(venv, tenv) init
-        in
-          {tenv=tenv, venv=Symbol.enter(venv, name, Env.VarEntry {ty=ty})}
-        end
-
-      |transDec (venv, tenv, A.VarDec{name,escape,typ=SOME(symbol, p), init, pos}) =
-        let
-          val {exp= _, ty} = transExp (venv, tenv) init
-        in
-          case Symbol.look (tenv, symbol) of
-              NONE => (ErrorMsg.error p ("type not defined: " ^ Symbol.name symbol))
-              | SOME ty2=>  if ty<>ty2 then (ErrorMsg.error p "type mismatch") else ();
-              {tenv=tenv,
-              venv=Symbol.enter(venv, name, Env.VarEntry{ty=ty})  }
-        end
+  and transDec (venv:venv, tenv:tenv) =
+    let
+      fun trdec (A.VarDec{name, escape, typ, init, pos}) =
+        (case typ of
+          NONE =>
+            let
+              val {exp, ty} = transExp(venv, tenv) init
+            in
+              {tenv = tenv, venv = Symbol.enter(venv, name, Env.VarEntry{ty=ty})}
+            end
+        | SOME(symbolo, posi) =>
+            let
+              val {exp, ty} = transExp(venv, tenv) init
+            in
+              case Symbol.look(tenv, symbolo) of
+                NONE =>
+                  (ErrorMsg.error posi "tipo no encontrado loko"; {tenv=tenv, venv=venv})
+              | SOME(typ2) =>
+                  if typ2 <> ty
+                  then
+                    (ErrorMsg.error posi "type mismatch loko."; {tenv=tenv, venv=venv})
+                  else
+                    {tenv = tenv, venv = Symbol.enter(venv, name, Env.VarEntry{ty=ty})}
+            end)
+      | trdec (A.FunctionDec(fundecs)) =
+          (ErrorMsg.error 0 "No estamos haciendo fundec ahora, loko."; {tenv=tenv, venv=venv})
+      | trdec (A.TypeDec(typedecs)) =
+          (ErrorMsg.error 0 "No estamos haciendo typedec ahora, loko."; {tenv=tenv, venv=venv})
+    in
+      trdec
+    end
 end
