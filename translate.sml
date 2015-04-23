@@ -20,5 +20,16 @@ struct
 
   (* TODO: Basicamente lo mismo que formals pero utilizando el allocLocal de mipsframe.sml.
   Devuelve un access con el mismo level  y el frame.access de la variable que se acaba de alocar *)
-  fun allocLocal level = (fn x: bool => (0, 0))
+  fun allocLocal {lvl, f} =
+    let
+      fun alloc esc:bool =
+        let
+          val cuantos_locales = Frame.cuantos_locales(f)
+          val faccess = Frame.allocLocal(name=Frame.name(f), formals=Frame.formals(f), cuantos_locales=cuantos_locales)(esc)
+        in
+          {{lvl, {Frame.name(f), Frame.formals(f), !cuantos_locales-4}}, faccess}
+        end
+    in
+      alloc
+    end
 end

@@ -6,6 +6,7 @@ struct
 
   fun name({name = name, formals = _ , cuantos_locales = _}) = name
   fun formals({name = _, formals = formals , cuantos_locales = _}) = formals
+  fun cuantos_locales({name = _, formals = _ , cuantos_locales = cuantos_locales}) = cuantos_locales
 
   fun newFrame {name=name, formals=formals} =
     let
@@ -25,7 +26,7 @@ struct
   (* TODO: Seria bueno hacer una funcion auxiliar para reciclarla en allocLocal y formalToAccess *)
   fun allocLocal {name, formals, cuantos_locales} boolThing =
     let
-      fun alloc esc =
+      fun alloc esc:bool =
         InFrame((!cuantos_locales*-4) - 4)
     in
       alloc
