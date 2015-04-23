@@ -92,6 +92,20 @@ Guess what you have to do next ;-).
 To do list
 
 - Copy Humberto's tiger.grm into repo
-- Hacer MIPSFrame.sml
-- Terminar translate.sml
+- MIPSFrame.sml
+  - newFrame
+  - allocLocal
+- Translate 
+  - newLevel
+  - allocLocal
 - Modificar semant.sml
+  - llamar allocLocal en TransDec (FunDec y VarDec)
+  - llamar newLevel en TransDec (FunDec)
+
+
+
+
+
+
+
+
