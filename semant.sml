@@ -4,7 +4,6 @@ struct
   structure A = Absyn
 
   (* dummy translate for chapter 5 *)
-  structure Translate = struct type exp = unit end
 
   type expty = {exp: Translate.exp, ty: Types.ty}
   type venv = Env.enventry Symbol.table
@@ -15,11 +14,12 @@ struct
 
   fun transProg (exp:A.exp) : unit =
     let
-      val {ty=_, exp=prog} = transExp (Env.base_venv, Env.base_tenv) exp
+      val firstLvl = Translate.newLevel {parent=Translate.outermost, name=Temp.namedlabel "main", formals=[]}
+      val {ty=_, exp=prog} = transExp (Env.base_venv, Env.base_tenv, firstLvl) exp
     in
       prog
     end
-  and transExp(venv:venv,tenv:tenv) : A.exp -> expty =
+  and transExp(venv:venv,tenv:tenv, level) : A.exp -> expty =
     let
       fun trexp (A.VarExp var) = transvar(var)
         | trexp (A.NilExp) = {exp = (), ty = Types.NIL}
@@ -63,7 +63,7 @@ struct
              fun delosenv (venv, tenv, nil) = {tenv=tenv, venv=venv}
                | delosenv (venv, tenv, dec::decs) =
                    let
-                      val {tenv=newtenv,venv=newvenv} = transDec(venv,tenv) dec
+                      val {tenv=newtenv,venv=newvenv} = transDec(level, venv, tenv) dec
                    in
                      delosenv (newvenv, newtenv, decs)
                    end
@@ -71,17 +71,21 @@ struct
              let
                 val {tenv=newtenv, venv=newvenv} = delosenv(venv,tenv,decs)
              in
-               transExp (newvenv, newtenv) body
+               transExp (newvenv, newtenv, level) body
              end
            end
-        | trexp _ = {ty=Types.UNIT, exp=ErrorMsg.error 0 "Can'ttypecheck this yet"}
+        | trexp _ = {ty=Types.UNIT, exp=ErrorMsg.error 0 "Can'typecheck this yet"}
       and transvar (A.SimpleVar (symbol, pos)) =
             (case Symbol.look(venv, symbol) of
               NONE =>
                 {exp = (ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol))), ty = Types.UNIT}
-            | SOME(Env.VarEntry{ty}) =>
+
+            (*Need to add actual access*)
+            | SOME(Env.VarEntry{access = _, ty}) =>
                 {exp = (), ty = ty}
-            | SOME(Env.FunEntry{formals, result}) => {exp = (ErrorMsg.error pos "loko esto es una function."), ty = Types.UNIT})
+
+            (*Need to add actual parameters.*)
+            | SOME(Env.FunEntry _) => {exp = (ErrorMsg.error pos "loko esto es una function."), ty = Types.UNIT})
         | transvar (A.FieldVar (var, symbol, pos)) =
             {exp = (ErrorMsg.error pos "loko no estamos haciendo vars complicados."), ty = Types.UNIT}
         | transvar (A.SubscriptVar (var, exp, pos)) =
@@ -89,19 +93,21 @@ struct
     in
       trexp
     end
-  and transDec (venv:venv, tenv:tenv) =
+  and transDec (level, venv:venv, tenv:tenv) =
     let
       fun trdec (A.VarDec{name, escape, typ, init, pos}) =
         (case typ of
           NONE =>
             let
-              val {exp, ty} = transExp(venv, tenv) init
+              val {exp, ty} = transExp(venv, tenv, level) init
+              val access = Translate.allocLocal level (!escape)
             in
-              {tenv = tenv, venv = Symbol.enter(venv, name, Env.VarEntry{ty=ty})}
+              {tenv = tenv, venv = Symbol.enter(venv, name, Env.VarEntry{access=access, ty=ty})}
             end
         | SOME(symbolo, posi) =>
             let
-              val {exp, ty} = transExp(venv, tenv) init
+              val {exp, ty} = transExp(venv, tenv, level) init
+              val access = Translate.allocLocal level (!escape)
             in
               case Symbol.look(tenv, symbolo) of
                 NONE =>
@@ -111,7 +117,7 @@ struct
                   then
                     (ErrorMsg.error posi "type mismatch loko."; {tenv=tenv, venv=venv})
                   else
-                    {tenv = tenv, venv = Symbol.enter(venv, name, Env.VarEntry{ty=ty})}
+                    {tenv = tenv, venv = Symbol.enter(venv, name, Env.VarEntry{access=access, ty=ty})}
             end)
       | trdec (A.FunctionDec(fundecs)) =
           (ErrorMsg.error 0 "No estamos haciendo fundec ahora, loko."; {tenv=tenv, venv=venv})
