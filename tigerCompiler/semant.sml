@@ -3,8 +3,6 @@ structure Semant :
 struct
   structure A = Absyn
 
-  (* dummy translate for chapter 5 *)
-
   type expty = {exp: Translate.exp, ty: Types.ty}
   type venv = Env.enventry Symbol.table
   type tenv = Types.ty Symbol.table
@@ -74,17 +72,38 @@ struct
                transExp (newvenv, newtenv, level) body
              end
            end
+        | trexp(A.CallExp {func, args, pos}) =
+          (case Symbol.look(venv, func) of
+                  SOME (Env.FunEntry {formals, label, level, result}) =>
+                      if length(args) <> length(formals) then
+                        {exp= ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args))), ty=Types.UNIT}
+                      else 
+                        let 
+                          fun easyTransExp(e) = transExp(venv, tenv, level) e
+                          fun checkType({exp=_, ty=ty1}, ty2) =
+                            if ty1 = ty2 then
+                              ()
+                            else
+                              (ErrorMsg.error pos ("Types no matchean loko."))
+
+                          val argTypes = map easyTransExp args
+                          val argforms = ListPair.zip(argTypes, formals)
+                        in
+                          app checkType argforms;
+                          {exp=(), ty=Types.UNIT}
+                        end
+                  | _ => ({exp= ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func)), ty=Types.UNIT}))
+
         | trexp _ = {ty=Types.UNIT, exp=ErrorMsg.error 0 "Can'typecheck this yet"}
+
       and transvar (A.SimpleVar (symbol, pos)) =
             (case Symbol.look(venv, symbol) of
               NONE =>
                 {exp = (ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol))), ty = Types.UNIT}
 
-            (*Need to add actual access*)
-            | SOME(Env.VarEntry{access = _, ty}) =>
+            | SOME(Env.VarEntry{access, ty}) =>
                 {exp = (), ty = ty}
 
-            (*Need to add actual parameters.*)
             | SOME(Env.FunEntry _) => {exp = (ErrorMsg.error pos "loko esto es una function."), ty = Types.UNIT})
         | transvar (A.FieldVar (var, symbol, pos)) =
             {exp = (ErrorMsg.error pos "loko no estamos haciendo vars complicados."), ty = Types.UNIT}
