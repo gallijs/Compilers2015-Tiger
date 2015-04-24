@@ -90,7 +90,7 @@ struct
                           val argforms = ListPair.zip(argTypes, formals)
                         in
                           app checkType argforms;
-                          {exp=(), ty=Types.UNIT}
+                          {exp=(), ty=result}
                         end
                   | _ => ({exp= ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func)), ty=Types.UNIT}))
 
