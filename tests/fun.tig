@@ -1,7 +1,7 @@
 let
-  var a : int := 0
+  var a : string := ""
   function foo(a:int):int = a + a
 in
-  a := 43;
-  foo(foo(a))
+  a := "hello";
+  foo(a)
 end

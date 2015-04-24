@@ -84,7 +84,7 @@ struct
                             if ty1 = ty2 then
                               ()
                             else
-                              (ErrorMsg.error pos ("Types no matchean loko."))
+                              (ErrorMsg.error pos ("Argument types no matchean loko."))
 
                           val argTypes = map easyTransExp args
                           val argforms = ListPair.zip(argTypes, formals)
