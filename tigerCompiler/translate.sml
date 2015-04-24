@@ -4,10 +4,10 @@ struct
 
   type exp = unit
   (* level tiene el frame adentro *)
-  type level = int * Frame.frame
+  datatype level = Outermost of int | Level of int * Frame.frame
   type access = level * Frame.access
 
-  val outermost = (0, Frame.newFrame({name=Temp.namedlabel("outermost"), formals=[]}))
+  val outermost = Outermost 0
 
   (* TODO: Estas funciones las va a utilizar semant.sml en CallExp y en VarDec *)
 
@@ -18,7 +18,7 @@ struct
     let
       val newFrame' = Frame.newFrame({name=name, formals=formals})
     in
-      (0, newFrame')
+      Level (0, newFrame')
     end
 
   (* TODO: formals tiene que llamar la funcion formals de mipsframe.sml para el frame asociado al
@@ -27,7 +27,7 @@ struct
 
   (* TODO: Basicamente lo mismo que formals pero utilizando el allocLocal de mipsframe.sml.
   Devuelve un access con el mismo level  y el frame.access de la variable que se acaba de alocar *)
-  fun allocLocal (lvl, f) =
+  fun allocLocal (Level (lvl, f)) =
     let
       fun alloc esc : access =
         let
@@ -35,7 +35,7 @@ struct
           val faccess : Frame.access = Frame.allocLocal({name=Frame.name f, formals=Frame.formals f, cuantos_locales=cuantos_locales})(esc)
           val newLocals = ref (!cuantos_locales-4)
           val nframe : Frame.frame = {name=Frame.name(f), formals=Frame.formals(f), cuantos_locales=newLocals}
-          val newLevel : level = (lvl, nframe)
+          val newLevel : level = Level (lvl, nframe)
           val returnAccess : access = (newLevel, faccess)
         in
           returnAccess

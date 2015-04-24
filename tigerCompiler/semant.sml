@@ -77,8 +77,8 @@ struct
                   SOME (Env.FunEntry {formals, label, level, result}) =>
                       if length(args) <> length(formals) then
                         {exp= ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args))), ty=Types.UNIT}
-                      else 
-                        let 
+                      else
+                        let
                           fun easyTransExp(e) = transExp(venv, tenv, level) e
                           fun checkType({exp=_, ty=ty1}, ty2) =
                             if ty1 = ty2 then
@@ -138,8 +138,31 @@ struct
                   else
                     {tenv = tenv, venv = Symbol.enter(venv, name, Env.VarEntry{access=access, ty=ty})}
             end)
-      | trdec (A.FunctionDec(fundecs)) =
-          (ErrorMsg.error 0 "No estamos haciendo fundec ahora, loko."; {tenv=tenv, venv=venv})
+      | trdec (A.FunctionDec[{name, params, result=SOME(rt, rtpos), body, pos}]) =
+        let
+          val SOME(result_ty) = Symbol.look(tenv, rt)
+          fun transparam {name: Symbol.symbol, escape: bool ref, typ: Symbol.symbol, pos: A.pos} =
+            case Symbol.look(tenv, typ) of
+              SOME t => {name=name, ty=t}
+              | NONE => (ErrorMsg.error pos "Could not find arg type, loko."; {name=name, ty=Types.UNIT})
+          val params' = (map transparam params)
+          val funLevel = Translate.newLevel {parent=level, name=Temp.newlabel(), formals=[true]}
+          val venv' = Symbol.enter(venv, name, Env.FunEntry{formals = map #ty params', result = result_ty, level = funLevel, label = Temp.newlabel()})
+          fun enterparam ({name, ty}, venv) =
+            let
+              val varAccess = Translate.allocLocal funLevel (true)
+            in
+              Symbol.enter(venv, name, Env.VarEntry{access=varAccess, ty=ty})
+            end
+          val venv'' = foldl enterparam venv' params'
+        in
+          transExp(venv'', tenv, funLevel) body;
+          {venv=venv', tenv=tenv}
+        end
+      | trdec (A.FunctionDec[]) =
+          (ErrorMsg.error 0 "Empty fundec list, loko."; {tenv=tenv, venv=venv})
+            | trdec (A.FunctionDec (first :: rest)) =
+          (ErrorMsg.error 0 "Too many fundecs, loko."; {tenv=tenv, venv=venv})
       | trdec (A.TypeDec(typedecs)) =
           (ErrorMsg.error 0 "No estamos haciendo typedec ahora, loko."; {tenv=tenv, venv=venv})
     in

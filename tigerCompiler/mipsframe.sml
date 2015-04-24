@@ -11,14 +11,12 @@ struct
   fun newFrame {name, formals} =
     let
       fun formalToAccess boolThing = (*formal -> access*)
-        if boolThing
-        then InFrame 0
-        else InReg (Temp.newtemp())
-
+        (* We assume all functions only have 1 formal argument *)
+        InFrame 0
     in
       {name = name,
       formals = map formalToAccess formals,
-      cuantos_locales = ref 0
+      cuantos_locales = ref 1
       (* TODO: Aqui puede ser que tengamos que añadir cosas. *)
       }
     end
