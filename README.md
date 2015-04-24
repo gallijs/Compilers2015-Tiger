@@ -1,3 +1,18 @@
+Guess what you have to do next ;-).
+
+To do list
+
+- Copy Humberto's tiger.grm into repo
+- MIPSFrame.sml
+  - newFrame
+  - allocLocal
+- Translate 
+  - newLevel
+  - allocLocal
+- Modificar semant.sml
+  - llamar allocLocal en TransDec (FunDec y VarDec)
+  - llamar newLevel en TransDec (FunDec)
+
 Parser to read tiger programs and produce an abstract syntax
 tree. Based on the parser in Chapter 4, I added 3 new expression types
 so I can parse a simple program:
@@ -86,26 +101,3 @@ val it = () : unit
 let.tig0.0:Can't typecheck this yet
 val it = () : unit
 ```
-
-Guess what you have to do next ;-).
-
-To do list
-
-- Copy Humberto's tiger.grm into repo
-- MIPSFrame.sml
-  - newFrame
-  - allocLocal
-- Translate 
-  - newLevel
-  - allocLocal
-- Modificar semant.sml
-  - llamar allocLocal en TransDec (FunDec y VarDec)
-  - llamar newLevel en TransDec (FunDec)
-
-
-
-
-
-
-
-

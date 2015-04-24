@@ -63,7 +63,7 @@ struct
              fun delosenv (venv, tenv, nil) = {tenv=tenv, venv=venv}
                | delosenv (venv, tenv, dec::decs) =
                    let
-                      val {tenv=newtenv,venv=newvenv} = transDec(level, venv, tenv) dec
+                      val {tenv=newtenv,venv=newvenv} = transDec(venv, tenv, level) dec
                    in
                      delosenv (newvenv, newtenv, decs)
                    end
@@ -93,7 +93,7 @@ struct
     in
       trexp
     end
-  and transDec (level, venv:venv, tenv:tenv) =
+  and transDec (venv:venv, tenv:tenv, level) =
     let
       fun trdec (A.VarDec{name, escape, typ, init, pos}) =
         (case typ of
