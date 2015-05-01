@@ -1,5 +1,5 @@
 structure Semant :
-     sig val transProg : Absyn.exp -> unit end =
+     sig val transProg : Absyn.exp -> Translate.frag list end =
 struct
   structure A = Absyn
 
@@ -10,23 +10,29 @@ struct
   fun checkInt ({ty=Types.INT, exp=_}, pos) = ()
   | checkInt ({ty=_,exp=_},pos) = ErrorMsg.error pos "integer required"
 
-  fun transProg (exp:A.exp) : unit =
+  fun transProg (exp:A.exp) =
     let
       val firstLvl = Translate.newLevel {parent=Translate.outermost, name=Temp.namedlabel "main", formals=[]}
       val {ty=_, exp=prog} = transExp (Env.base_venv, Env.base_tenv, firstLvl) exp
     in
-      prog
+      Translate.procEntryExit {level = firstLvl, body = prog};
+      Translate.getResult()
     end
   and transExp(venv:venv,tenv:tenv, level) : A.exp -> expty =
     let
       fun trexp (A.VarExp var) = transvar(var)
-        | trexp (A.NilExp) = {exp = (), ty = Types.NIL}
-        | trexp (A.IntExp _) = {ty=Types.INT, exp=()}
-        | trexp (A.StringExp (_,_)) = {ty=Types.STRING, exp=()}
+        | trexp (A.NilExp) = {exp = Translate.nilExp(), ty = Types.NIL}
+        | trexp (A.IntExp n) = {exp = Translate.intExp(n), ty=Types.INT}
+        | trexp (A.StringExp (s, pos)) = {exp = Translate.strExp(s), ty=Types.STRING}
         | trexp (A.OpExp{left, oper, right, pos}) =
-              (checkInt (trexp left, pos);
-              checkInt (trexp right, pos);
-              {ty=Types.INT, exp=()})
+          let
+            val leftTr = trexp left
+            val rightTr = trexp right
+          in
+            (checkInt (leftTr, pos);
+            checkInt (rightTr, pos);
+            {exp = Translate.opExp(oper, (#exp leftTr), (#exp rightTr)), ty = Types.INT})
+          end
         (* Aqui hay magia so la voy a explicar.
            Primero recibimos la lista de pares *)
         | trexp (A.SeqExp explist) =
@@ -41,10 +47,10 @@ struct
               val newExpList = (map (fn (exp) => trexp exp) expList)
             in
               (* SeqExp devuelve el resultado del ultimo exp, asi que aqui devolvemos ese tipo. *)
-              {exp = (), ty = (#ty (List.last(newExpList)))}
+              {exp = Translate.seqExp(newExpList), ty = (#ty (List.last(newExpList)))}
             end
           else
-            {exp = (), ty = Types.UNIT}
+            {exp = (), ty = Types.NIL}
         | trexp (A.AssignExp {var, exp, pos}) =
             let
               val varType = transvar(var)
@@ -52,7 +58,7 @@ struct
             in
               if (#ty expType) = (#ty varType)
               then
-                {exp = (), ty = (#ty expType)}
+                {exp = Translate.assignExp((#exp varType), (#exp expType)), ty = (#ty expType)}
               else
                 {exp = (ErrorMsg.error pos ("Types no matchean loko.")), ty = Types.UNIT}
             end
@@ -90,7 +96,7 @@ struct
                           val argforms = ListPair.zip(argTypes, formals)
                         in
                           app checkType argforms;
-                          {exp=(), ty=result}
+                          {exp = Translate.callExp(func, map (#exp) argTypes), ty=result}
                         end
                   | _ => ({exp= ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func)), ty=Types.UNIT}))
 
@@ -102,7 +108,7 @@ struct
                 {exp = (ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol))), ty = Types.UNIT}
 
             | SOME(Env.VarEntry{access, ty}) =>
-                {exp = (), ty = ty}
+                {exp = Translate.simpleVar(access), ty = ty}
 
             | SOME(Env.FunEntry _) => {exp = (ErrorMsg.error pos "loko esto es una function."), ty = Types.UNIT})
         | transvar (A.FieldVar (var, symbol, pos)) =
