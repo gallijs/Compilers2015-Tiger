@@ -15,6 +15,7 @@ signatures/translate.sig
 translate.sml
 signatures/temp.sig
 temp.sml
+tree.sml
 prabsyn.sml
 types.sml
 env.sml

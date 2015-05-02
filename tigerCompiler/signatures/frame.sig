@@ -14,7 +14,7 @@ sig
 
   val worldsize: int
 
-  val exp: access => Tree.exp -> Tree.exp
+  val exp: access -> Tree.exp -> Tree.exp
 
   val procEntryExit1: frame * Tree.stm -> Tree.stm
 
