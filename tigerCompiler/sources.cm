@@ -8,6 +8,7 @@ tiger.grm
 symbol.sml
 signatures/table.sig
 table.sml
+tree.sml
 signatures/frame.sig
 mipsframe.sml
 semant.sml

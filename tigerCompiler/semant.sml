@@ -153,7 +153,8 @@ struct
               | NONE => (ErrorMsg.error pos "Could not find arg type, loko."; {name=name, ty=Types.UNIT})
           val params' = (map transparam params)
           val funLevel = Translate.newLevel {parent=level, name=Temp.newlabel(), formals=[true]}
-          val venv' = Symbol.enter(venv, name, Env.FunEntry{formals = map #ty params', result = result_ty, level = funLevel, label = Temp.newlabel()})
+          val funEntry = Env.FunEntry{formals = map #ty params', result = result_ty, level = funLevel, label = Temp.newlabel()}
+          val venv' = Symbol.enter(venv, name, funEntry)
           fun enterparam ({name, ty}, venv) =
             let
               val varAccess = Translate.allocLocal funLevel (true)
@@ -161,9 +162,10 @@ struct
               Symbol.enter(venv, name, Env.VarEntry{access=varAccess, ty=ty})
             end
           val venv'' = foldl enterparam venv' params'
+          val bodyExp = transExp(venv'', tenv, funLevel) body;
         in
-          transExp(venv'', tenv, funLevel) body;
-          {venv=venv', tenv=tenv}
+          Translate.funDec((#label funEntry), (#level funEntry), (#exp bodyExp))
+          {venv=venv'', tenv=tenv}
         end
       | trdec (A.FunctionDec[]) =
           (ErrorMsg.error 0 "Empty fundec list, loko."; {tenv=tenv, venv=venv})
