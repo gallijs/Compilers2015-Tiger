@@ -1,6 +1,7 @@
 structure Translate : TRANSLATE =
 struct
   structure Frame = MipsFrame
+  structure Tr = Tree
 
   type exp = unit
   (* level tiene el frame adentro *)
@@ -25,7 +26,7 @@ struct
   level que recibe. En nuestro caso level siempre es 0 *)
   fun formals level = []
 
-  (* TODO: Basicamente lo mismo que formals pero utilizando el allocLocal de mipsframe.sml.
+  (* Basicamente lo mismo que formals pero utilizando el allocLocal de mipsframe.sml.
   Devuelve un access con el mismo level  y el frame.access de la variable que se acaba de alocar *)
   fun allocLocal (Level (lvl, f)) =
     let
@@ -43,4 +44,21 @@ struct
     in
       alloc
     end
+
+  (* procEntryExit recibe el level y el body de una funcion y se encarga de llamar
+  procEntryExit1 con el body de la funcion porque el libro dice que hay que hacer eso *)
+  fun procEntryExit{level:level, body:exp} =
+    case level of Outermost => ErrorMsg.msg "no functions in Outermost level"
+    | Level(lvl, f) =>
+        let
+          val body' = Frame.procEntryExit1(frame, body)
+        in
+          addFrag(Frame.PROC({body=body', frame=f}))
+        end
+
+  fun callExp {funName, args} =
+    Tr.CALL(Tr.NAME(funName), args)
+
+  fun funDec {label, level : level, body} =
+    procEntryExit({level = level, body = Tr.SEQ(Tr.LABEL(label), body)})
 end
