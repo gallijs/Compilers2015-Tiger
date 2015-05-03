@@ -8,6 +8,8 @@ struct
   datatype level = Outermost of int | Level of int * Frame.frame
   type access = level * Frame.access
 
+  val addFrag = ref [] : Frame.frag list ref 
+
   val outermost = Outermost 0
 
   (* TODO: Estas funciones las va a utilizar semant.sml en CallExp y en VarDec *)
@@ -48,12 +50,12 @@ struct
   (* procEntryExit recibe el level y el body de una funcion y se encarga de llamar
   procEntryExit1 con el body de la funcion porque el libro dice que hay que hacer eso *)
   fun procEntryExit{level:level, body:exp} =
-    case level of Outermost => ErrorMsg.msg "no functions in Outermost level"
+    case level of Outermost 0 => ErrorMsg.error 0 ("no functions in Outermost level")
     | Level(lvl, f) =>
         let
-          val body' = Frame.procEntryExit1(frame, body)
+          val body' = Frame.procEntryExit1(f, Tree.MOVE (Tree.TEMP Frame.RV, body))
         in
-          addFrag(Frame.PROC({body=body', frame=f}))
+          addFrag := Frame.PROC {body=body', frame=f} :: (!addFrag)
         end
 
   fun callExp {funName, args} =
@@ -62,3 +64,6 @@ struct
   fun funDec {label, level : level, body} =
     procEntryExit({level = level, body = Tr.SEQ(Tr.LABEL(label), body)})
 end
+
+
+
