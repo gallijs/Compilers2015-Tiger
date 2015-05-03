@@ -63,6 +63,9 @@ struct
 
   fun funDec {label, level : level, body} =
     procEntryExit({level = level, body = Tr.SEQ(Tr.LABEL(label), body)})
+
+  (* Funcion que devuelve la lista de fragmentos *)
+  fun getResult () = addFrag
 end
 
 
