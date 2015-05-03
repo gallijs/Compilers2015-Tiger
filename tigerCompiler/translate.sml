@@ -61,7 +61,7 @@ struct
   fun callExp {funName, args} =
     Tree.CALL(Tree.NAME(funName), args)
 
-  fun funDec {label, level : level, body} =
+  fun funDec {label: Temp.label, level : level, body: Tree.exp} =
     procEntryExit({level = level, body = Tree.ESEQ(Tree.LABEL(label), body)})
 end
 
