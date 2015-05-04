@@ -54,16 +54,16 @@ struct
   fun intExp n = (Tr.CONST n)
 
 
-  fun convertSeq( [] ) = Tr.EXP(Tr.CONST 0)
-    | convertSeq([seq]) = seq
-    | convertSeq(seq::seqs) = Tr.SEQ(seq, convertSeq(seqs))
+  fun convertSeq([]) = Tr.EXP(Tr.CONST 0)
+    | convertSeq([seq]) = Tr.EXP(seq)
+    | convertSeq(seq::seqs) = Tr.SEQ(Tr.EXP(seq), convertSeq(seqs))
 
-  fun seqExp(seqlist) = Tr.ESEQ(convertSeq(seqlist), Tr.CONST 0)
+  fun seqExp(seqlist: Tree.exp list) = Tr.ESEQ(convertSeq(seqlist), Tr.CONST 0)
 
   fun simpleVar (localLevel, localAccess) level = (Frame.exp localAccess (Tr.TEMP Frame.FP))
 
-  fun callExp {funName, args} =
-    Tree.CALL(Tree.NAME(funName), args)
+  fun callExp(funName: Absyn.symbol, args: Tree.exp list, label: Temp.label) =
+    Tree.CALL(Tree.NAME(label), args)
 
   fun getOp(A.PlusOp) = Tr.PLUS
     | getOp(A.MinusOp) = Tr.MINUS

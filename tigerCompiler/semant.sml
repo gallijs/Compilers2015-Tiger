@@ -43,13 +43,14 @@ struct
               val (expList, posList) = ListPair.unzip explist
               (* Haz una lista nueva corriendo trexp en cada elemento de expList.
                  (Think list comprehensions en *sob* Python *sob* ) *)
-              val newExpList = (map (fn (exp) => trexp exp) expList)
+              val newExptyList = (map (fn (exp) => trexp exp) expList)
+              val newExpList = (map (fn {exp, ty} => exp) newExptyList)
             in
               (* SeqExp devuelve el resultado del ultimo exp, asi que aqui devolvemos ese tipo. *)
-              {exp = Translate.seqExp(newExpList), ty = (#ty (List.last(newExpList)))}
+              {exp = Translate.seqExp(newExpList), ty = (#ty (List.last(newExptyList)))}
             end
           else
-            {exp = (), ty = Types.NIL}
+            {exp = Translate.seqExp([]), ty = Types.NIL}
         | trexp (A.AssignExp {var, exp, pos}) =
             let
               val varType = transvar(var)
@@ -81,7 +82,8 @@ struct
           (case Symbol.look(venv, func) of
                   SOME (Env.FunEntry {formals, label, level, result}) =>
                       if length(args) <> length(formals) then
-                        {exp= ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args))), ty=Types.UNIT}
+                        (ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args)));
+                                                {exp= Translate.nilExp(), ty=Types.UNIT})
                       else
                         let
                           fun easyTransExp(e) = transExp(venv, tenv, level) e
@@ -95,9 +97,9 @@ struct
                           val argforms = ListPair.zip(argTypes, formals)
                         in
                           app checkType argforms;
-                          {exp = Translate.callExp(func, map (#exp) argTypes), ty=result}
+                          {exp = Translate.callExp(func, map (#exp) argTypes, label), ty=result}
                         end
-                  | _ => ({exp= ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func)), ty=Types.UNIT}))
+                  | _ => (ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func));{exp= Translate.nilExp(), ty=Types.UNIT}))
 
         | trexp _ = {ty=Types.UNIT, exp=ErrorMsg.error 0 "Can'typecheck this yet"}
 
