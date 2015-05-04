@@ -70,7 +70,7 @@ struct
     | getOp(A.TimesOp) = Tr.MUL
     | getOp(A.DivideOp) = Tr.DIV
 
-  fun opExp(ty, oper, left, right) =
+  fun opExp(oper, left, right) =
     let
       val oper' = getOp(oper)
     in

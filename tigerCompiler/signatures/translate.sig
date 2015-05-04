@@ -13,7 +13,7 @@ sig
   val nilExp: unit -> Tree.exp
   val seqExp: Tree.stm list -> Tree.exp
   val simpleVar: access -> level -> Tree.exp
-  val opExp : Types.ty * Absyn.oper * Tree.exp * Tree.exp -> Tree.exp
+  val opExp : Absyn.oper * Tree.exp * Tree.exp -> Tree.exp
   val assignExp : Tree.exp * Tree.exp -> Tree.stm
 
 
