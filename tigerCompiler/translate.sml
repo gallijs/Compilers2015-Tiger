@@ -8,7 +8,7 @@ struct
   datatype level = Outermost of int | Level of int * Frame.frame
   type access = level * Frame.access
 
-  val addFrag = ref [] : Frame.frag list ref 
+  val addFrag = ref [] : Frame.frag list ref
 
   val outermost = Outermost 0
 
@@ -47,9 +47,12 @@ struct
       alloc
     end
 
+  fun nilExp () = (Tr.MEM (Tr.CONST 0))
+  fun intExp n = (Tr.CONST n) 
+   
   (* procEntryExit recibe el level y el body de una funcion y se encarga de llamar
   procEntryExit1 con el body de la funcion porque el libro dice que hay que hacer eso *)
-  fun procEntryExit{level:level, body:exp} =
+  fun procEntryExit{level:level, body:Tree.exp} =
     case level of Outermost 0 => ErrorMsg.error 0 ("no functions in Outermost level")
     | Level(lvl, f) =>
         let
@@ -59,10 +62,10 @@ struct
         end
 
   fun callExp {funName, args} =
-    Tr.CALL(Tr.NAME(funName), args)
+    Tree.CALL(Tree.NAME(funName), args)
 
   fun funDec {label, level : level, body} =
-    procEntryExit({level = level, body = Tr.SEQ(Tr.LABEL(label), body)})
+    procEntryExit({level = level, body = Tree.ESEQ(Tree.LABEL(label), body)})
 
   (* Funcion que devuelve la lista de fragmentos *)
   fun getResult () = addFrag
