@@ -43,13 +43,14 @@ struct
               val (expList, posList) = ListPair.unzip explist
               (* Haz una lista nueva corriendo trexp en cada elemento de expList.
                  (Think list comprehensions en *sob* Python *sob* ) *)
-              val newExpList = (map (fn (exp) => trexp exp) expList)
+              val newExptyList = (map (fn (exp) => trexp exp) expList)
+              val newExpList = (map (fn {exp, ty} => exp) newExptyList)
             in
               (* SeqExp devuelve el resultado del ultimo exp, asi que aqui devolvemos ese tipo. *)
-              {exp = Translate.seqExp(newExpList), ty = (#ty (List.last(newExpList)))}
+              {exp = Translate.seqExp(newExpList), ty = (#ty (List.last(newExptyList)))}
             end
           else
-            {exp = (), ty = Types.NIL}
+            {exp = Translate.seqExp([]), ty = Types.NIL}
         | trexp (A.AssignExp {var, exp, pos}) =
             let
               val varType = transvar(var)
