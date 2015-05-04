@@ -59,7 +59,7 @@ struct
 
   fun seqExp(seqlist: Tree.exp list) = Tr.ESEQ(convertSeq(seqlist), Tr.CONST 0)
 
-  fun simpleVar (localLevel, localAccess) level = (Frame.exp localAccess (Tr.TEMP Frame.FP))
+  fun simpleVar ((localLevel, localAccess), level) = (Frame.exp localAccess (Tr.TEMP Frame.FP))
 
   fun callExp(funName: Absyn.symbol, args: Tree.exp list, label: Temp.label) =
     Tree.CALL(Tree.NAME(label), args)

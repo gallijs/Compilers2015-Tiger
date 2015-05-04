@@ -107,9 +107,8 @@ struct
             (case Symbol.look(venv, symbol) of
               NONE =>
                 (ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol));{exp = Translate.nilExp(), ty = Types.UNIT})
-
             | SOME(Env.VarEntry{access, ty}) =>
-                {exp = Translate.simpleVar(access), ty = ty}
+                {exp = Translate.simpleVar(access, level), ty = ty}
             | SOME(Env.FunEntry _) => (ErrorMsg.error pos "loko esto es una function.";{exp = Translate.nilExp(), ty = Types.UNIT}))
     in
       trexp
