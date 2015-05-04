@@ -10,6 +10,10 @@ sig
   val allocLocal: level -> bool -> access
 
   val intExp: int -> exp
-  val nilExp: Tree.exp -> exp
+  val nilExp: unit -> exp
 
+
+  val procEntryExit : {level:level, body:Tree.exp} -> unit
+  val callExp : {funName: Temp.label, args: Tree.exp list} -> Tree.exp
+  val funDec : {label: Temp.label, level : level, body: Tree.exp} -> unit
 end
