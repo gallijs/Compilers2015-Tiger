@@ -4,7 +4,7 @@ struct
   structure Tr = Tree
   structure A = Absyn
 
-  type exp = unit
+  type exp = Tree.exp
   (* level tiene el frame adentro *)
   datatype level = Outermost of int | Level of int * Frame.frame
   type access = level * Frame.access
@@ -70,14 +70,14 @@ struct
     | getOp(A.MinusOp) = Tr.MINUS
     | getOp(A.TimesOp) = Tr.MUL
     | getOp(A.DivideOp) = Tr.DIV
-    
-  fun opExp(ty, oper, left, right) = 
-    let 
-      val oper' = getOp(oper) 
+
+  fun opExp(ty, oper, left, right) =
+    let
+      val oper' = getOp(oper)
     in
       Tr.BINOP(oper', left, right)
     end
-      
+
   fun assignExp(varExp,rightExp) = (Tr.MOVE(varExp, rightExp))
 
   (* procEntryExit recibe el level y el body de una funcion y se encarga de llamar
@@ -91,7 +91,7 @@ struct
           frags := Frame.PROC {body=body', frame=f} :: (!frags)
         end
 
-  fun funDec {label: Temp.label, level : level, body: Tree.exp} =
+  fun funDec (label: Temp.label, level : level, body: Tree.exp) =
     procEntryExit({level = level, body = Tree.ESEQ(Tree.LABEL(label), body)})
 
   (* Funcion que devuelve la lista de fragmentos *)

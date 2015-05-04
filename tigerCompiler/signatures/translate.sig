@@ -15,13 +15,13 @@ sig
   (*val simpleVar : access * level -> Tree.exp*)
   val opExp : Types.ty * Absyn.oper * Tree.exp * Tree.exp -> Tree.exp
   val assignExp : Tree.exp * Tree.exp -> Tree.stm
-  
+
 
   val procEntryExit : {level:level, body:Tree.exp} -> unit
   val callExp : {funName: Temp.label, args: Tree.exp list} -> Tree.exp
-  val funDec : {label: Temp.label, level : level, body: Tree.exp} -> unit
+  val funDec : Temp.label * level * exp -> unit
 
   val frags: MipsFrame.frag list ref
-  val getResult: unit ->  MipsFrame.frag list 
+  val getResult: unit ->  MipsFrame.frag list
 
 end
