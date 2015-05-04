@@ -1,5 +1,5 @@
 structure Semant :
-     sig val transProg : Absyn.exp -> Translate.frag list end =
+     sig val transProg : Absyn.exp -> Translate.frags list end =
 struct
   structure A = Absyn
 
@@ -23,7 +23,6 @@ struct
       fun trexp (A.VarExp var) = transvar(var)
         | trexp (A.NilExp) = {exp = Translate.nilExp(), ty = Types.NIL}
         | trexp (A.IntExp n) = {exp = Translate.intExp(n), ty=Types.INT}
-        | trexp (A.StringExp (s, pos)) = {exp = Translate.strExp(s), ty=Types.STRING}
         | trexp (A.OpExp{left, oper, right, pos}) =
           let
             val leftTr = trexp left

@@ -2,6 +2,7 @@ structure Translate : TRANSLATE =
 struct
   structure Frame = MipsFrame
   structure Tr = Tree
+  structure A = Absyn
 
   type exp = unit
   (* level tiene el frame adentro *)
@@ -11,6 +12,8 @@ struct
   val addFrag = ref [] : Frame.frag list ref
 
   val outermost = Outermost 0
+
+  val frags = ref [] : Frame.frag list ref
 
   (* TODO: Estas funciones las va a utilizar semant.sml en CallExp y en VarDec *)
 
@@ -57,6 +60,26 @@ struct
 
   fun seqExp(seqlist) = Tr.ESEQ(convertSeq(seqlist), Tr.CONST 0)
 
+  (*fun simpleVar((actLevel, access), curLevel) =
+    (Frame.exp(access))*)
+
+  fun callExp {funName, args} =
+    Tree.CALL(Tree.NAME(funName), args)
+
+  fun getOp(A.PlusOp) = Tr.PLUS
+    | getOp(A.MinusOp) = Tr.MINUS
+    | getOp(A.TimesOp) = Tr.MUL
+    | getOp(A.DivideOp) = Tr.DIV
+    
+  fun opExp(ty, oper, left, right) = 
+    let 
+      val oper' = getOp(oper) 
+    in
+      Tr.BINOP(oper', left, right)
+    end
+      
+  fun assignExp(varExp,rightExp) = (Tr.MOVE(varExp, rightExp))
+
   (* procEntryExit recibe el level y el body de una funcion y se encarga de llamar
   procEntryExit1 con el body de la funcion porque el libro dice que hay que hacer eso *)
   fun procEntryExit{level:level, body:Tree.exp} =
@@ -65,17 +88,14 @@ struct
         let
           val body' = Frame.procEntryExit1(f, Tree.MOVE (Tree.TEMP Frame.RV, body))
         in
-          addFrag := Frame.PROC {body=body', frame=f} :: (!addFrag)
+          frags := Frame.PROC {body=body', frame=f} :: (!frags)
         end
-
-  fun callExp {funName, args} =
-    Tree.CALL(Tree.NAME(funName), args)
 
   fun funDec {label: Temp.label, level : level, body: Tree.exp} =
     procEntryExit({level = level, body = Tree.ESEQ(Tree.LABEL(label), body)})
 
   (* Funcion que devuelve la lista de fragmentos *)
-  fun getResult () = addFrag
+  fun getResult () = !frags
 end
 
 

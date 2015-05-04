@@ -9,12 +9,19 @@ sig
   val formals: level -> access list
   val allocLocal: level -> bool -> access
 
-  val intExp: int -> Tree.exp
+  val intExp : int -> Tree.exp
   val nilExp: unit -> Tree.exp
   val seqExp: Tree.stm list -> Tree.exp
-
+  (*val simpleVar : access * level -> Tree.exp*)
+  val opExp : Types.ty * Absyn.oper * Tree.exp * Tree.exp -> Tree.exp
+  val assignExp : Tree.exp * Tree.exp -> Tree.stm
+  
 
   val procEntryExit : {level:level, body:Tree.exp} -> unit
   val callExp : {funName: Temp.label, args: Tree.exp list} -> Tree.exp
   val funDec : {label: Temp.label, level : level, body: Tree.exp} -> unit
+
+  val frags: MipsFrame.frag list ref
+  val getResult: unit ->  MipsFrame.frag list 
+
 end

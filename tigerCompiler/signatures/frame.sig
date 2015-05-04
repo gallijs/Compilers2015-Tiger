@@ -9,6 +9,7 @@ sig
   val cuantos_locales : frame -> int ref
   val allocLocal : frame -> bool -> access
 
+  val FP: Temp.temp
   val RV: Temp.temp
   val RA: Temp.temp
   val v0: Temp.temp
