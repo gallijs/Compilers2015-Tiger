@@ -82,7 +82,8 @@ struct
           (case Symbol.look(venv, func) of
                   SOME (Env.FunEntry {formals, label, level, result}) =>
                       if length(args) <> length(formals) then
-                        {exp= ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args))), ty=Types.UNIT}
+                        (ErrorMsg.error  pos ("Number of arguments incorrect: "^Int.toString(length(args)));
+                                                {exp= Translate.nilExp(), ty=Types.UNIT})
                       else
                         let
                           fun easyTransExp(e) = transExp(venv, tenv, level) e
@@ -96,9 +97,9 @@ struct
                           val argforms = ListPair.zip(argTypes, formals)
                         in
                           app checkType argforms;
-                          {exp = Translate.callExp(func, map (#exp) argTypes), ty=result}
+                          {exp = Translate.callExp(func, map (#exp) argTypes, label), ty=result}
                         end
-                  | _ => ({exp= ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func)), ty=Types.UNIT}))
+                  | _ => (ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func));{exp= Translate.nilExp(), ty=Types.UNIT}))
 
         | trexp _ = {ty=Types.UNIT, exp=ErrorMsg.error 0 "Can'typecheck this yet"}
 

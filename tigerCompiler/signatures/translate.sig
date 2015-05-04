@@ -18,7 +18,7 @@ sig
 
 
   val procEntryExit : {level:level, body:Tree.exp} -> unit
-  val callExp : {funName: Temp.label, args: Tree.exp list} -> Tree.exp
+  val callExp : Absyn.symbol *  Tree.exp list * Temp.label -> Tree.exp
   val funDec : Temp.label * level * exp -> unit
 
   val frags: MipsFrame.frag list ref

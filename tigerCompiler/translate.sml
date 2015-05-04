@@ -62,8 +62,8 @@ struct
 
   fun simpleVar (localLevel, localAccess) level = (Frame.exp localAccess (Tr.TEMP Frame.FP))
 
-  fun callExp {funName, args} =
-    Tree.CALL(Tree.NAME(funName), args)
+  fun callExp(funName: Absyn.symbol, args: Tree.exp list, label: Temp.label) =
+    Tree.CALL(Tree.NAME(label), args)
 
   fun getOp(A.PlusOp) = Tr.PLUS
     | getOp(A.MinusOp) = Tr.MINUS
