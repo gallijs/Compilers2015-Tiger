@@ -10,11 +10,11 @@ sig
   val allocLocal: level -> bool -> access
 
   val intExp : int -> Tree.exp
-  val nilExp: unit -> Tree.stm
+  val nilExp: unit -> Tree.exp
   val seqExp: Tree.exp list -> Tree.exp
   val simpleVar: access -> level -> Tree.exp
   val opExp : Absyn.oper * Tree.exp * Tree.exp -> Tree.exp
-  val assignExp : Tree.exp * Tree.exp -> Tree.stm
+  val assignExp : Tree.exp * Tree.exp -> Tree.exp
 
 
   val procEntryExit : {level:level, body:Tree.exp} -> unit

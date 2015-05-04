@@ -50,9 +50,8 @@ struct
       alloc
     end
 
-  fun nilExp () = Tr.EXP((Tr.CONST 0))
+  fun nilExp () = (Tr.CONST 0)
   fun intExp n = (Tr.CONST n)
-
 
   fun convertSeq([]) = Tr.EXP(Tr.CONST 0)
     | convertSeq([seq]) = Tr.EXP(seq)
@@ -77,7 +76,7 @@ struct
       Tr.BINOP(oper', left, right)
     end
 
-  fun assignExp(varExp,rightExp) = (Tr.MOVE(varExp, rightExp))
+  fun assignExp(varExp,rightExp) = Tr.ESEQ(Tr.MOVE(varExp, rightExp), Tr.CONST 0)
 
   (* procEntryExit recibe el level y el body de una funcion y se encarga de llamar
   procEntryExit1 con el body de la funcion porque el libro dice que hay que hacer eso *)

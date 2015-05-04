@@ -60,7 +60,7 @@ struct
               then
                 {exp = Translate.assignExp((#exp varType), (#exp expType)), ty = (#ty expType)}
               else
-                {exp = Translate.nilExp, ty = Types.UNIT}
+                {exp = Translate.nilExp(), ty = Types.UNIT}
             end
         | trexp (A.LetExp {decs, body, pos}) =
            let
@@ -106,14 +106,11 @@ struct
       and transvar (A.SimpleVar (symbol, pos)) =
             (case Symbol.look(venv, symbol) of
               NONE =>
-                ((ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol))); 
-                  {exp = Translate.nilExp , ty = Types.UNIT})
+                (ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol));{exp = Translate.nilExp(), ty = Types.UNIT})
 
             | SOME(Env.VarEntry{access, ty}) =>
                 {exp = Translate.simpleVar(access), ty = ty}
-
-            | SOME(Env.FunEntry _) => (ErrorMsg.error pos "loko esto es una function.");
-                                        {exp = Translate.nilExp, ty = Types.UNIT})
+            | SOME(Env.FunEntry _) => (ErrorMsg.error pos "loko esto es una function.";{exp = Translate.nilExp(), ty = Types.UNIT}))
     in
       trexp
     end
