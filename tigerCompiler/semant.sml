@@ -101,21 +101,21 @@ struct
                         end
                   | _ => (ErrorMsg.error  pos ("Function non-existant: " ^ Symbol.name(func));{exp= Translate.nilExp(), ty=Types.UNIT}))
 
-        | trexp _ = {ty=Types.UNIT, exp=ErrorMsg.error 0 "Can'typecheck this yet"}
+        | trexp _ = (ErrorMsg.error 0 "Can'typecheck this yet";{ty=Types.UNIT, exp=Translate.nilExp()})
 
       and transvar (A.SimpleVar (symbol, pos)) =
             (case Symbol.look(venv, symbol) of
               NONE =>
-                {exp = (ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol))), ty = Types.UNIT}
+                (ErrorMsg.error pos ("loko, var sin definir: " ^ Symbol.name(symbol));{exp = Translate.nilExp(), ty = Types.UNIT})
 
             | SOME(Env.VarEntry{access, ty}) =>
                 {exp = Translate.simpleVar(access), ty = ty}
 
-            | SOME(Env.FunEntry _) => {exp = (ErrorMsg.error pos "loko esto es una function."), ty = Types.UNIT})
+            | SOME(Env.FunEntry _) => (ErrorMsg.error pos "loko esto es una function.";{exp = Translate.nilExp(), ty = Types.UNIT}))
         | transvar (A.FieldVar (var, symbol, pos)) =
-            {exp = (ErrorMsg.error pos "loko no estamos haciendo vars complicados."), ty = Types.UNIT}
+            (ErrorMsg.error pos "loko no estamos haciendo vars complicados.";{exp = Translate.nilExp(), ty = Types.UNIT})
         | transvar (A.SubscriptVar (var, exp, pos)) =
-            {exp = (ErrorMsg.error pos "loko no estamos haciendo vars complicados."), ty = Types.UNIT}
+            (ErrorMsg.error pos "loko no estamos haciendo vars complicados.";{exp = Translate.nilExp(), ty = Types.UNIT})
     in
       trexp
     end
