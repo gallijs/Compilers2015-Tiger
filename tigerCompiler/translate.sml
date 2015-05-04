@@ -48,8 +48,15 @@ struct
     end
 
   fun nilExp () = (Tr.MEM (Tr.CONST 0))
-  fun intExp n = (Tr.CONST n) 
-   
+  fun intExp n = (Tr.CONST n)
+
+
+  fun convertSeq( [] ) = Tr.EXP(Tr.CONST 0)
+    | convertSeq([seq]) = seq
+    | convertSeq(seq::seqs) = Tr.SEQ(seq, convertSeq(seqs))
+
+  fun seqExp(seqlist) = Tr.ESEQ(convertSeq(seqlist), Tr.CONST 0)
+
   (* procEntryExit recibe el level y el body de una funcion y se encarga de llamar
   procEntryExit1 con el body de la funcion porque el libro dice que hay que hacer eso *)
   fun procEntryExit{level:level, body:Tree.exp} =
