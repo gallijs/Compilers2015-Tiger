@@ -59,7 +59,7 @@ struct
               then
                 {exp = Translate.assignExp((#exp varType), (#exp expType)), ty = (#ty expType)}
               else
-                {exp = (ErrorMsg.error pos ("Types no matchean loko.")), ty = Types.UNIT}
+                {exp = Translate.nilExp, ty = Types.UNIT}
             end
         | trexp (A.LetExp {decs, body, pos}) =
            let

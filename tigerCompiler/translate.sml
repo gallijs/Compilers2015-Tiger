@@ -50,7 +50,7 @@ struct
       alloc
     end
 
-  fun nilExp () = (Tr.MEM (Tr.CONST 0))
+  fun nilExp () = Tr.EXP((Tr.CONST 0))
   fun intExp n = (Tr.CONST n)
 
 
